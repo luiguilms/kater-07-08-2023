@@ -10,18 +10,16 @@ from django.contrib.auth.views import PasswordResetView
 from .models import *
 from django.contrib.auth.decorators import login_required
 import requests
-from django.template.loader import render_to_string
 import json
 
 from decimal import Decimal
-from django.utils.text import slugify
-from django.dispatch import receiver
+from django.db import transaction
 
 import os
 from django.conf import settings
 from django.template.loader import get_template
 from django.contrib.staticfiles import finders
-
+from .utils import num_to_words
 
 
 # Create your views here
@@ -372,7 +370,7 @@ class CotizacionAgregarView(View):
 
         context = {
             # Agregar esta línea para pasar la variable cotizacion al contexto
-            'formCotizacion': form_cotizacion,
+            'form_Cotizacion': form_cotizacion,
             'lista_proformas': lista_proformas,
             'lista_clientes': lista_clientes
         }
@@ -460,21 +458,25 @@ def detalle_cotizacion(request, pk, detalle_id=None):
     else:
         detalle = None
     
-    url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    #url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    url = "https://api.apis.net.pe/v1/tipo-cambio-sunat"
     try:
         response = requests.get(url)
         if response.status_code == 200:
-            data = json.loads(response.text)
-            rates = data["rates"]
-            pen_rate = rates.get("PEN")
-            usd_rate = rates.get("USD")
+            data = response.json()
+
+            rates = data["venta"]
+            fecha = data["fecha"]
+            pen_rate = rates
+            fecha_rate = fecha
         else:
             pen_rate = None
-            usd_rate = None
+            fecha_rate = None
     except requests.exceptions.RequestException as e:
         # Si hay un error en la solicitud, puedes manejarlo aquí
         pen_rate = None
-        usd_rate = None
+        fecha_rate = None
+        #usd_rate = None
     
     if request.method == 'POST':
         # Si es una edición, instanciamos el formulario con el detalle existente
@@ -489,10 +491,10 @@ def detalle_cotizacion(request, pk, detalle_id=None):
             moneda = str(nuevo_detalle.cotizacion.proforma.moneda)
             tipomoneda = str(nuevo_detalle.codigo.tipo_moneda)
 
-            if moneda == "soles" and tipomoneda == "dolares":
-                nuevo_detalle.precio_unitario = nuevo_detalle.precio_unitario / formula
-            if moneda == "dolares" and tipomoneda == "soles":
+            if moneda == "Soles" and tipomoneda == "Dolares":
                 nuevo_detalle.precio_unitario = nuevo_detalle.precio_unitario * formula
+            if moneda == "Dolares" and tipomoneda == "Soles":
+                nuevo_detalle.precio_unitario = nuevo_detalle.precio_unitario / formula
             
             nuevo_detalle.save()
             # Imprime el nuevo detalle para verificar si está bien guardado
@@ -506,20 +508,14 @@ def detalle_cotizacion(request, pk, detalle_id=None):
         form = DescripcionCotizacionForm(
             initial={'cotizacion': cotizacion}, instance=detalle)
 
-    # ---------------CAMBIO DOLAR-----------------------------
-    # Procesar el formulario de conversión a dólares
-
-    
-
     context = {
         'cotizacion': cotizacion,
         'detalles': detalles,
         'form': form,
         'pen_rate': pen_rate,
-        'usd_rate': usd_rate
+        'fecha':fecha_rate
     }
     return render(request, 'detalle_cotizacion.html', context)
-
 # ------------FIN COTIZACION-------------------
 
 
@@ -543,37 +539,24 @@ class DetalleEliminarView(View):
         return JsonResponse({'message': 'detalle eliminada correctamente'})
     
 class pdfMantenimiento(View):
-    def link_callback(self,uri, rel):
-                
-                """
-                Convert HTML URIs to absolute system paths so xhtml2pdf can access those
-                resources
-                """
-                result = finders.find(uri)
-                if result:
-                        if not isinstance(result, (list, tuple)):
-                                result = [result]
-                        result = list(os.path.realpath(path) for path in result)
-                        path=result[0]
-                else:
-                        sUrl = settings.STATIC_URL        # Typically /static/
-                        sRoot = settings.STATIC_ROOT      # Typically /home/userX/project_static/
-                        mUrl = settings.MEDIA_URL         # Typically /media/
-                        mRoot = settings.MEDIA_ROOT       # Typically /home/userX/project_static/media/
+    def link_callback(self, uri, rel):
+        """
+        Convert HTML URIs to absolute system paths so xhtml2pdf can access those resources
+        """
+        sUrl = settings.STATIC_URL        # Typically /static/
+        mUrl = settings.MEDIA_URL         # Typically /media/
 
-                        if uri.startswith(mUrl):
-                                path = os.path.join(mRoot, uri.replace(mUrl, ""))
-                        elif uri.startswith(sUrl):
-                                path = os.path.join(sRoot, uri.replace(sUrl, ""))
-                        else:
-                                return uri
+        if uri.startswith(mUrl):
+            path = os.path.join(settings.MEDIA_ROOT, uri.replace(mUrl, ""))
+        elif uri.startswith(sUrl):
+            path = os.path.join(settings.STATIC_ROOT, uri.replace(sUrl, ""))
+        else:
+            return uri
 
-                # make sure that file exists
-                if not os.path.isfile(path):
-                        raise Exception(
-                                'media URI must start with %s or %s' % (sUrl, mUrl)
-                        )
-                return path
+        # make sure that file exists
+        if not os.path.isfile(path):
+            raise Exception('media URI must start with %s or %s' % (sUrl, mUrl))
+        return path
 
     def get(self,request, pk):
         
@@ -586,9 +569,12 @@ class pdfMantenimiento(View):
         subtotal = sum(detalle.precio_total for detalle in detalles)
         igv = subtotal * Decimal('0.18')
         precio_total = subtotal + igv
+        precio_total_words_integer, precio_total_words_decimal = num_to_words(precio_total)
+        
 
         # Pasar los datos necesarios a la plantilla HTML, incluyendo los totales calculados
         template = get_template('imprimir_detalle.html')
+        
         
         context = {
             'cotizacion': cotizacion,
@@ -599,9 +585,8 @@ class pdfMantenimiento(View):
             'igv': igv,
             'precio_total': precio_total,
             'title': 'mi primer pdf',
-            'icon': 'img/logo.jpg',
-            'firma': 'img/firma.jpg',
-            'cuenta': 'img/cuentasobraymantenimiento.jpg'
+            'precio_total_words_integer': precio_total_words_integer,
+            'precio_total_words_decimal': precio_total_words_decimal,
         }
         html = template.render(context)
         response = HttpResponse(content_type='application/pdf')
@@ -617,37 +602,24 @@ class pdfMantenimiento(View):
     
 
 class pdfConsultoria(View):
-    def link_callback(self,uri, rel):
-                
-                """
-                Convert HTML URIs to absolute system paths so xhtml2pdf can access those
-                resources
-                """
-                result = finders.find(uri)
-                if result:
-                        if not isinstance(result, (list, tuple)):
-                                result = [result]
-                        result = list(os.path.realpath(path) for path in result)
-                        path=result[0]
-                else:
-                        sUrl = settings.STATIC_URL        # Typically /static/
-                        sRoot = settings.STATIC_ROOT      # Typically /home/userX/project_static/
-                        mUrl = settings.MEDIA_URL         # Typically /media/
-                        mRoot = settings.MEDIA_ROOT       # Typically /home/userX/project_static/media/
+    def link_callback(self, uri, rel):
+        """
+        Convert HTML URIs to absolute system paths so xhtml2pdf can access those resources
+        """
+        sUrl = settings.STATIC_URL        # Typically /static/
+        mUrl = settings.MEDIA_URL         # Typically /media/
 
-                        if uri.startswith(mUrl):
-                                path = os.path.join(mRoot, uri.replace(mUrl, ""))
-                        elif uri.startswith(sUrl):
-                                path = os.path.join(sRoot, uri.replace(sUrl, ""))
-                        else:
-                                return uri
+        if uri.startswith(mUrl):
+            path = os.path.join(settings.MEDIA_ROOT, uri.replace(mUrl, ""))
+        elif uri.startswith(sUrl):
+            path = os.path.join(settings.STATIC_ROOT, uri.replace(sUrl, ""))
+        else:
+            return uri
 
-                # make sure that file exists
-                if not os.path.isfile(path):
-                        raise Exception(
-                                'media URI must start with %s or %s' % (sUrl, mUrl)
-                        )
-                return path
+        # make sure that file exists
+        if not os.path.isfile(path):
+            raise Exception('media URI must start with %s or %s' % (sUrl, mUrl))
+        return path
 
     def get(self,request, pk):
         
@@ -660,6 +632,7 @@ class pdfConsultoria(View):
         subtotal = sum(detalle.precio_total for detalle in detalles)
         igv = subtotal * Decimal('0.18')
         precio_total = subtotal + igv
+        precio_total_words_integer, precio_total_words_decimal = num_to_words(precio_total)
 
         # Pasar los datos necesarios a la plantilla HTML, incluyendo los totales calculados
         template = get_template('imprimir_detalle_consultoria.html')
@@ -673,9 +646,9 @@ class pdfConsultoria(View):
             'igv': igv,
             'precio_total': precio_total,
             'title': 'mi primer pdf',
-            'icon': 'img/logo.jpg',
-            'firma': 'img/firma.jpg',
-            'cuenta': 'img/cuentasconsultoria.jpg'
+            'precio_total_words_integer': precio_total_words_integer,
+            'precio_total_words_decimal': precio_total_words_decimal,
+            
         }
         html = template.render(context)
         response = HttpResponse(content_type='application/pdf')
@@ -690,37 +663,24 @@ class pdfConsultoria(View):
         return response
 
 class pdfManoDeObra(View):
-    def link_callback(self,uri, rel):
-                
-                """
-                Convert HTML URIs to absolute system paths so xhtml2pdf can access those
-                resources
-                """
-                result = finders.find(uri)
-                if result:
-                        if not isinstance(result, (list, tuple)):
-                                result = [result]
-                        result = list(os.path.realpath(path) for path in result)
-                        path=result[0]
-                else:
-                        sUrl = settings.STATIC_URL        # Typically /static/
-                        sRoot = settings.STATIC_ROOT      # Typically /home/userX/project_static/
-                        mUrl = settings.MEDIA_URL         # Typically /media/
-                        mRoot = settings.MEDIA_ROOT       # Typically /home/userX/project_static/media/
+    def link_callback(self, uri, rel):
+        """
+        Convert HTML URIs to absolute system paths so xhtml2pdf can access those resources
+        """
+        sUrl = settings.STATIC_URL        # Typically /static/
+        mUrl = settings.MEDIA_URL         # Typically /media/
 
-                        if uri.startswith(mUrl):
-                                path = os.path.join(mRoot, uri.replace(mUrl, ""))
-                        elif uri.startswith(sUrl):
-                                path = os.path.join(sRoot, uri.replace(sUrl, ""))
-                        else:
-                                return uri
+        if uri.startswith(mUrl):
+            path = os.path.join(settings.MEDIA_ROOT, uri.replace(mUrl, ""))
+        elif uri.startswith(sUrl):
+            path = os.path.join(settings.STATIC_ROOT, uri.replace(sUrl, ""))
+        else:
+            return uri
 
-                # make sure that file exists
-                if not os.path.isfile(path):
-                        raise Exception(
-                                'media URI must start with %s or %s' % (sUrl, mUrl)
-                        )
-                return path
+        # make sure that file exists
+        if not os.path.isfile(path):
+            raise Exception('media URI must start with %s or %s' % (sUrl, mUrl))
+        return path
 
     def get(self,request, pk):
         
@@ -733,6 +693,7 @@ class pdfManoDeObra(View):
         subtotal = sum(detalle.precio_total for detalle in detalles)
         igv = subtotal * Decimal('0.18')
         precio_total = subtotal + igv
+        precio_total_words_integer, precio_total_words_decimal = num_to_words(precio_total)
 
         # Pasar los datos necesarios a la plantilla HTML, incluyendo los totales calculados
         template = get_template('imprimir_detalle_obra.html')
@@ -746,9 +707,9 @@ class pdfManoDeObra(View):
             'igv': igv,
             'precio_total': precio_total,
             'title': 'mi primer pdf',
-            'icon': 'img/logo.jpg',
-            'firma': 'img/firma.jpg',
-            'cuenta': 'img/cuentasobraymantenimiento.jpg'
+            'precio_total_words_integer': precio_total_words_integer,
+            'precio_total_words_decimal': precio_total_words_decimal,
+            
         }
         html = template.render(context)
         response = HttpResponse(content_type='application/pdf')
@@ -976,7 +937,7 @@ class ProformaConsultoriaAgregarView(View):
 
     def get(self, request):
         # Obtener las listas de objetos para cada modelo
-        tipo_proforma = "Consultoria" 
+        tipo_proforma = "Consultoria y Entrenamiento" 
         bu_diagnostico_consultoria = Bu.objects.get(bu=tipo_proforma)
         
         lista_pago = Pago.objects.all()
@@ -1004,7 +965,7 @@ class ProformaConsultoriaAgregarView(View):
             return redirect('proformaconsultoria')
 
         # Si el formulario no es válido, volvemos a mostrarlo con los errores
-        tipo_proforma = "Consultoria" 
+        tipo_proforma = "Consultoria y Entrenamiento" 
         bu_diagnostico_consultoria = Bu.objects.get(bu=tipo_proforma)
         lista_pago = Pago.objects.all()
         lista_moneda = Moneda.objects.all()
@@ -1030,7 +991,7 @@ class ProformaConsultoriaEditarView(View):
         formProformaConsultoria = ProformaConsultoriaForm(request.POST or None,instance=proformaConsultoria)
 
         # Obtener las listas de objetos para cada modelo
-        tipo_proforma = "Consultoria" 
+        tipo_proforma = "Consultoria y Entrenamiento" 
         bu_diagnostico_consultoria = Bu.objects.get(bu=tipo_proforma)
         lista_pago = Pago.objects.all()
         lista_moneda = Moneda.objects.all()
@@ -1449,21 +1410,25 @@ def detalle_cotizacion_consultoria(request, pk, detalle_id=None):
     else:
         detalleConsultoria = None
 
-    url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    #url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    url = "https://api.apis.net.pe/v1/tipo-cambio-sunat"
+
     try:
         response = requests.get(url)
         if response.status_code == 200:
-            data = json.loads(response.text)
-            rates = data["rates"]
-            pen_rate = rates.get("PEN")
-            usd_rate = rates.get("USD")
+            data = response.json()
+            rates = data["venta"]
+            fecha = data["fecha"]
+            pen_rate = rates
+            fecha_rate = fecha
         else:
             pen_rate = None
-            usd_rate = None
+            fecha_rate = None
     except requests.exceptions.RequestException as e:
         # Si hay un error en la solicitud, puedes manejarlo aquí
         pen_rate = None
-        usd_rate = None
+        fecha_rate=None
+        #usd_rate = None
 
 
     if request.method == 'POST':
@@ -1478,8 +1443,12 @@ def detalle_cotizacion_consultoria(request, pk, detalle_id=None):
             nuevo_detalle_consultoria.precio_unitario = nuevo_precio_unitario
             moneda = str(nuevo_detalle_consultoria.cotizacion.proforma.moneda)
 
-            if moneda == "dolares" :
+            if moneda == "Dolares"  :
+                nuevo_detalle_consultoria.precio_unitario = nuevo_detalle_consultoria.precio_unitario / formula
+            elif moneda == "Soles":
                 nuevo_detalle_consultoria.precio_unitario = nuevo_detalle_consultoria.precio_unitario * formula
+              
+
 
 
             nuevo_detalle_consultoria.save()
@@ -1534,21 +1503,25 @@ def detalle_cotizacion_obra(request, pk, detalle_id=None):
     else:
         detalleObra = None
     
-    url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    #url = "https://openexchangerates.org/api/latest.json?app_id=bdb2fa1058a9421fa8c31950aa949c92&symbols=PEN,USD"
+    url = "https://api.apis.net.pe/v1/tipo-cambio-sunat"
+
     try:
         response = requests.get(url)
         if response.status_code == 200:
-            data = json.loads(response.text)
-            rates = data["rates"]
-            pen_rate = rates.get("PEN")
-            usd_rate = rates.get("USD")
+            data = response.json()
+
+            rates = data["venta"]
+            fecha = data["fecha"]
+            pen_rate = rates
+            fecha_rate = fecha
         else:
             pen_rate = None
-            usd_rate = None
+            fecha_rate = None
     except requests.exceptions.RequestException as e:
         # Si hay un error en la solicitud, puedes manejarlo aquí
         pen_rate = None
-        usd_rate = None
+        fecha_rate = None
     # Procesar el formulario de conversión a dólares
     
     if request.method == 'POST' and 'conversion-form' in request.POST:
@@ -1572,10 +1545,10 @@ def detalle_cotizacion_obra(request, pk, detalle_id=None):
             moneda = str(nuevo_detalle_obra.cotizacion.proforma.moneda)
             tipomoneda = str(nuevo_detalle_obra.codigo.tipo_moneda)
 
-            if moneda == "soles" and tipomoneda == "dolares":
-                nuevo_detalle_obra.precio_unitario = nuevo_detalle_obra.precio_unitario / formula
-            if moneda == "dolares" and tipomoneda == "soles":
+            if moneda == "Soles" and tipomoneda == "Dolares":
                 nuevo_detalle_obra.precio_unitario = nuevo_detalle_obra.precio_unitario * formula
+            if moneda == "Dolares" and tipomoneda == "Soles":
+                nuevo_detalle_obra.precio_unitario = nuevo_detalle_obra.precio_unitario / formula
             
             nuevo_detalle_obra.save()
             # Imprime el nuevo detalle para verificar si está bien guardado
@@ -1596,7 +1569,7 @@ def detalle_cotizacion_obra(request, pk, detalle_id=None):
         'detallesObra': detallesObra,
         'form': form,
         'pen_rate': pen_rate,
-        'usd_rate': usd_rate
+        'fecha':fecha_rate
     }
     return render(request, 'detalle_cotizacion_obra.html', context)
 
@@ -1615,3 +1588,134 @@ class DetalleManoDeObraEliminarView(View):
 
         return JsonResponse({'message': 'detalle eliminada correctamente'})
     
+def duplicar_cotizacion(request, pk):
+    cotizacion_original = get_object_or_404(Cotizacion, pk=pk)
+    
+    # Comienza una transacción para asegurarse de que todos los elementos se dupliquen correctamente
+    with transaction.atomic():
+        # Duplica la proforma de la cotización original
+        nueva_proforma = Proforma.objects.create(
+            bu=cotizacion_original.proforma.bu,
+            condicion_pago=cotizacion_original.proforma.condicion_pago,
+            moneda=cotizacion_original.proforma.moneda,
+            validez=cotizacion_original.proforma.validez,
+            vendedor=cotizacion_original.proforma.vendedor,
+            correo=cotizacion_original.proforma.correo,
+            celular=cotizacion_original.proforma.celular,
+            actividad=cotizacion_original.proforma.actividad,
+            observacion=cotizacion_original.proforma.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica la cotización
+        nueva_cotizacion = Cotizacion.objects.create(
+            proforma=nueva_proforma,
+            cliente=cotizacion_original.cliente,
+            observacion=cotizacion_original.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica los detalles de la cotización
+        detalles_original = descripcionCotizacion.objects.filter(cotizacion=cotizacion_original)
+        for detalle_original in detalles_original:
+            nuevo_detalle = descripcionCotizacion.objects.create(
+                cotizacion=nueva_cotizacion,
+                cantidad=detalle_original.cantidad,
+                codigo=detalle_original.codigo,
+                descripcion=detalle_original.descripcion,
+                precio_unitario=detalle_original.precio_unitario,
+                disponibilidad=detalle_original.disponibilidad,
+                precio_total=detalle_original.precio_total,
+                descuento=detalle_original.descuento
+                # ... Copia otros campos si es necesario
+            )
+    
+    return redirect('cotizacion')
+
+def duplicar_cotizacion_consultoria(request, pk):
+    cotizacion_original = get_object_or_404(CotizacionConsultoria, pk=pk)
+    
+    # Comienza una transacción para asegurarse de que todos los elementos se dupliquen correctamente
+    with transaction.atomic():
+        # Duplica la proforma de la cotización original
+        nueva_proforma = ProformaConsultoria.objects.create(
+            bu=cotizacion_original.proforma.bu,
+            condicion_pago=cotizacion_original.proforma.condicion_pago,
+            moneda=cotizacion_original.proforma.moneda,
+            validez=cotizacion_original.proforma.validez,
+            vendedor=cotizacion_original.proforma.vendedor,
+            correo=cotizacion_original.proforma.correo,
+            celular=cotizacion_original.proforma.celular,
+            actividad=cotizacion_original.proforma.actividad,
+            observacion=cotizacion_original.proforma.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica la cotización
+        nueva_cotizacion = CotizacionConsultoria.objects.create(
+            proforma=nueva_proforma,
+            cliente=cotizacion_original.cliente,
+            observacion=cotizacion_original.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica los detalles de la cotización
+        detalles_original = descripcionCotizacionConsultoria.objects.filter(cotizacion=cotizacion_original)
+        for detalle_original in detalles_original:
+            nuevo_detalle = descripcionCotizacionConsultoria.objects.create(
+                cotizacion=nueva_cotizacion,
+                cantidad=detalle_original.cantidad,
+                codigo=detalle_original.codigo,
+                descripcion=detalle_original.descripcion,
+                precio_unitario=detalle_original.precio_unitario,
+                disponibilidad=detalle_original.disponibilidad,
+                precio_total=detalle_original.precio_total,
+                descuento=detalle_original.descuento
+                # ... Copia otros campos si es necesario
+            )
+    
+    return redirect('cotizacionconsultoria')
+
+def duplicar_cotizacion_obra(request, pk):
+    cotizacion_original = get_object_or_404(CotizacionManoDeObra, pk=pk)
+    
+    # Comienza una transacción para asegurarse de que todos los elementos se dupliquen correctamente
+    with transaction.atomic():
+        # Duplica la proforma de la cotización original
+        nueva_proforma = ProformaManoDeObra.objects.create(
+            bu=cotizacion_original.proforma.bu,
+            condicion_pago=cotizacion_original.proforma.condicion_pago,
+            moneda=cotizacion_original.proforma.moneda,
+            validez=cotizacion_original.proforma.validez,
+            vendedor=cotizacion_original.proforma.vendedor,
+            correo=cotizacion_original.proforma.correo,
+            celular=cotizacion_original.proforma.celular,
+            actividad=cotizacion_original.proforma.actividad,
+            observacion=cotizacion_original.proforma.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica la cotización
+        nueva_cotizacion = CotizacionManoDeObra.objects.create(
+            proforma=nueva_proforma,
+            cliente=cotizacion_original.cliente,
+            observacion=cotizacion_original.observacion
+            # ... Copia otros campos si es necesario
+        )
+        
+        # Duplica los detalles de la cotización
+        detalles_original = descripcionCotizacionManoDeObra.objects.filter(cotizacion=cotizacion_original)
+        for detalle_original in detalles_original:
+            nuevo_detalle = descripcionCotizacionManoDeObra.objects.create(
+                cotizacion=nueva_cotizacion,
+                cantidad=detalle_original.cantidad,
+                codigo=detalle_original.codigo,
+                descripcion=detalle_original.descripcion,
+                precio_unitario=detalle_original.precio_unitario,
+                disponibilidad=detalle_original.disponibilidad,
+                precio_total=detalle_original.precio_total,
+                descuento=detalle_original.descuento
+                # ... Copia otros campos si es necesario
+            )
+    
+    return redirect('cotizacionmanodeobra')

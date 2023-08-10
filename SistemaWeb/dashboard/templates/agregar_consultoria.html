@@ -64,7 +64,7 @@
 
   <form method="post">
     {% csrf_token %}
-    {{ formConsultoria | crispy }}  <!-- Asegúrate de utilizar formCliente aquí -->
+    {{ formConsultoria | crispy }} 
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a href="{% url 'consultoria' %}" class="btn btn-volver">Volver</a>
   </form>

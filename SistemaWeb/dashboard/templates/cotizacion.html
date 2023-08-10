@@ -20,9 +20,11 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Proforma</th>
                             <th>Fecha de proforma</th>
                             <th>Cliente</th>
+                            <th>Actividad</th>
                             <th>Observacion</th>
                             <th>Acciones</th>
                         </tr>
@@ -32,9 +34,11 @@
                     <tbody>
                         {% for cotizacion in cotizaciones %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ cotizacion.proforma }}</td>
-                            <td>{{ cotizacion.proforma.fecha }}</td>
+                            <td>{{ cotizacion.proforma.fecha|date:"j/m/Y" }}</td>
                             <td>{{ cotizacion.cliente }}</td>
+                            <td>{{ cotizacion.proforma.actividad }}</td>
                             <th>{{ cotizacion.observacion }}</th>
                             <td>
                                 <!-- Icono para editar -->
@@ -42,12 +46,17 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
 
-
+                                <!-- Icono para duplicar -->
+                                <a href="{% url 'duplicar_cotizacion' pk=cotizacion.pk %}" class="btn btn-success btn-circle">
+                                    <i class="fas fa-clone"></i>
+                                </a>
+                                {% comment %}
                                 <!-- Icono para eliminar -->
                                 <a href="{% url 'eliminar_cotizacion' cotizacion.id %}"
                                     class="btn btn-danger btn-circle eliminar-cotizacion">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
+                                {% endcomment %}
                                 <a href="{% url 'detalle_cotizacion' cotizacion.id %}" class="btn btn-info btn-circle">
                                     <i class="fas fa-plus"></i>
                                 </a>
@@ -97,5 +106,13 @@
         });
     });
 </script>
-
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
 {% endblock %}

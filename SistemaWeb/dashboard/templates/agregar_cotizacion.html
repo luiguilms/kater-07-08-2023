@@ -4,7 +4,11 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <div class="container-fluid">
+    {% if cotizacion %}
+    <h1>Editar Cotización</h1>
+    {% else %}
     <h1>Agregar Cotización</h1>
+    {% endif %}
 
     <form method="post">
         {% csrf_token %}

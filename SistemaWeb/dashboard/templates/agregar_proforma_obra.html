@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="bu">BU:</label>
+            <label for="bu">Diagnostico y Mantenimiento:</label>
             <select class="form-control" id="bu" name="bu">
                 
                 <option value="{{ bu_diagnostico_obra.id }}" {% if bu_diagnostico_obra.id == proformaManoDeObra.bu_diagnostico_obra.id %} selected{% endif %}>{{ bu_diagnostico_obra.bu }}</option>
@@ -69,6 +69,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const fechaInput = document.getElementById('fecha');
+        const validezInput = document.getElementById('validez');
         const setTodayButton = document.getElementById('setToday');
 
         setTodayButton.addEventListener('click', function() {
@@ -78,7 +79,31 @@
             const day = today.getDate().toString().padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
             fechaInput.value = formattedDate;
+            updateValidez();
         });
-    });
+
+        fechaInput.addEventListener('change', function() {
+            updateValidez();
+        });
+
+        function updateValidez() {
+            const selectedDate = new Date(fechaInput.value);
+            if (!isNaN(selectedDate)) {
+                const newDate = new Date(selectedDate);
+                newDate.setMonth(selectedDate.getMonth() + 1);
+
+                // Ajustar el día para no exceder el último día del mes
+                const lastDayOfMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
+                const newDay = Math.min(selectedDate.getDate()+1, lastDayOfMonth);
+
+                newDate.setDate(newDay);
+
+                const newYear = newDate.getFullYear();
+                const newMonth = (newDate.getMonth() + 1).toString().padStart(2, '0');
+                const newFormattedDate = `${newDay}/${newMonth}/${newYear}`;
+                validezInput.value = newFormattedDate;
+            }
+        }
+    });
 </script>
 {% endblock %}

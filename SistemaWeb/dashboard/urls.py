@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
-
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
 
@@ -81,13 +82,9 @@ urlpatterns = [
     path('obra/editar/<int:pk>/', views.ManoDeObraEditarView.as_view(), name='editar_obra'),
     path('obra/eliminar/<int:pk>/', views.ManoDeObraEliminarView.as_view(), name='eliminar_obra'),
     path('agregar_direccion/', views.agregar_direccion, name='agregar_direccion'),
-
-
-
-
-
-
-
-
-
+    path('duplicar_cotizacion/<int:pk>/', views.duplicar_cotizacion, name='duplicar_cotizacion'),
+    path('duplicar_cotizacion_consultoria/<int:pk>/', views.duplicar_cotizacion_consultoria, name='duplicar_cotizacion_consultoria'),
+    path('duplicar_cotizacion_obra/<int:pk>/', views.duplicar_cotizacion_obra, name='duplicar_cotizacion_obra'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

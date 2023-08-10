@@ -128,14 +128,14 @@
                                         <td>{{ detalleConsultoria.cantidad}}</td>
                                         <td>{{detalleConsultoria.codigo}}</td>
                                         <td>{{detalleConsultoria.descripcion}}</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                             <td>S/.{{detalleConsultoria.precio_unitario}}</td>
                                         {% else %}
                                         <td>$.{{detalleConsultoria.precio_unitario}}</td>
                                         {% endif %}
                                         <td>{{detalleConsultoria.disponibilidad}}</td>
                                         <td>{{detalleConsultoria.descuento}}%</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                             <td>S/.{{ detalleConsultoria.precio_total }}</td>
                                         {% else %}
                                         <td>$.{{ detalleConsultoria.precio_total }}</td>
@@ -146,12 +146,12 @@
                                                 class="btn btn-warning btn-circle">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <!-- Icono para eliminar -->
                                             <a href="{% url 'eliminar_detalle_consultoria' detalleConsultoria.id %}"
                                                 class="btn btn-danger btn-circle eliminar-detalle-consultoria">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
+                                            
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -192,14 +192,13 @@
                     <span class="icon text-white-50">
                         <i class="fas fa-download"></i>
                     </span>
-                    <span class="text">Descargar PDF</span>
+                    <span class="text">Visualizar PDF</span>
                 </a>
         </div>
         </div>
     </div>
 
 </div>
-<!-- Agregar este script al final del template -->
 <!-- Agregar este script al final del template -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -298,5 +297,35 @@
         });
     });
 </script>
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var descuentoTipoField = $('[name="descuento_tipo"]');
+        var descuentoField = $('[name="descuento"]').closest('.form-group');
+        var descuentoManualField = $('[name="descuento_manual"]').closest('.form-group');
 
+        function toggleDescuentoFields() {
+            if (descuentoTipoField.filter(':checked').val() === 'manual') {
+                descuentoField.hide();
+                descuentoManualField.show();
+            } else {
+                descuentoField.show();
+                descuentoManualField.hide();
+            }
+        }
+
+        toggleDescuentoFields();  // Inicialmente ocultar o mostrar según el valor actual
+        descuentoTipoField.change(toggleDescuentoFields);
+
+        // Resto de tu código JavaScript
+    });
+</script>
 {% endblock %}

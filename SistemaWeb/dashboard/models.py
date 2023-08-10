@@ -144,6 +144,7 @@ class Consultoria(models.Model):
     codigo = models.CharField(max_length=200)
     descripcion = models.CharField(max_length=200, null=True , blank=True)
     precio_unitario = models.DecimalField(max_digits=10,decimal_places=2,default=0,blank=True)
+
     def __str__(self):
         return self.codigo
     
@@ -163,6 +164,10 @@ class descripcionCotizacion(models.Model):
         (10, '10%'),
         (15, '15%'),
     )
+    DESCUENTO_TIPO_CHOICES = (
+        ('porcentaje', 'Porcentaje'),
+        ('manual', 'Manual'),
+    )
     cotizacion = models.ForeignKey(Cotizacion, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     codigo = models.ForeignKey(piezasRepuesto,on_delete=models.CASCADE,null=True)
@@ -170,7 +175,10 @@ class descripcionCotizacion(models.Model):
     precio_unitario = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     disponibilidad = models.CharField(max_length=20)
     precio_total = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    descuento_tipo = models.CharField(max_length=10, choices=DESCUENTO_TIPO_CHOICES, default='porcentaje')
     descuento = models.IntegerField(choices=DESCUENTO_CHOICES,  default=0)
+    descuento_manual = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
 
 
     def __str__(self):
@@ -183,6 +191,10 @@ class descripcionCotizacionConsultoria(models.Model):
         (10, '10%'),
         (15, '15%'),
     )
+    DESCUENTO_TIPO_CHOICES = (
+        ('porcentaje', 'Porcentaje'),
+        ('manual', 'Manual'),
+    )
     cotizacion = models.ForeignKey(CotizacionConsultoria, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     codigo = models.ForeignKey(Consultoria,on_delete=models.CASCADE,null=True)
@@ -190,7 +202,9 @@ class descripcionCotizacionConsultoria(models.Model):
     precio_unitario = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     disponibilidad = models.CharField(max_length=20)
     precio_total = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    descuento_tipo = models.CharField(max_length=10, choices=DESCUENTO_TIPO_CHOICES, default='porcentaje')
     descuento = models.IntegerField(choices=DESCUENTO_CHOICES,  default=0)
+    descuento_manual = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
 
     def __str__(self):
@@ -203,6 +217,10 @@ class descripcionCotizacionManoDeObra(models.Model):
         (10, '10%'),
         (15, '15%'),
     )
+    DESCUENTO_TIPO_CHOICES = (
+        ('porcentaje', 'Porcentaje'),
+        ('manual', 'Manual'),
+    )
     cotizacion = models.ForeignKey(CotizacionManoDeObra, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     codigo = models.ForeignKey(ManodeObra,on_delete=models.CASCADE,null=True)
@@ -210,7 +228,9 @@ class descripcionCotizacionManoDeObra(models.Model):
     precio_unitario = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     disponibilidad = models.CharField(max_length=20)
     precio_total = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    descuento_tipo = models.CharField(max_length=10, choices=DESCUENTO_TIPO_CHOICES, default='porcentaje')
     descuento = models.IntegerField(choices=DESCUENTO_CHOICES,  default=0)
+    descuento_manual = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
 
     def __str__(self):
@@ -285,10 +305,15 @@ def update_precio_total(sender, instance, **kwargs):
             precio_unitario_decimal = Decimal(instance.precio_unitario)
         except (decimal.InvalidOperation, TypeError, ValueError):
             precio_unitario_decimal = Decimal('0')
-
-        descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
-        precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
-        instance.precio_total = instance.cantidad * precio_unitario_descuento
+        if instance.descuento_tipo == 'porcentaje':
+            descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
+            precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
+            instance.precio_total = instance.cantidad * precio_unitario_descuento
+        elif instance.descuento_tipo == 'manual':
+            instance.precio_total = instance.cantidad * precio_unitario_decimal
+            # Si el descuento es manual, aplicar el descuento directamente al precio unitario
+            descuento_decimal = Decimal(instance.descuento_manual) if instance.descuento_manual is not None else Decimal('0')
+            instance.precio_total = instance.precio_total - descuento_decimal
 
 @receiver(post_save, sender=descripcionCotizacionConsultoria)
 def update_descripcionCotizacion_info_consultoria(sender, instance, **kwargs):
@@ -307,9 +332,12 @@ def update_precio_total_consultoria(sender, instance, **kwargs):
             precio_unitario_decimal = Decimal(instance.precio_unitario)
         except (decimal.InvalidOperation, TypeError, ValueError):
             precio_unitario_decimal = Decimal('0')
-
-        descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
-        precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
+        if instance.descuento_tipo == 'porcentaje':
+            descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
+            precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
+        else:
+            descuento_decimal = Decimal(instance.descuento_manual)
+            precio_unitario_descuento = precio_unitario_decimal - descuento_decimal
         instance.precio_total = instance.cantidad * precio_unitario_descuento
 
 @receiver(post_save, sender=descripcionCotizacionManoDeObra)
@@ -329,9 +357,12 @@ def update_precio_total_obra(sender, instance, **kwargs):
             precio_unitario_decimal = Decimal(instance.precio_unitario)
         except (decimal.InvalidOperation, TypeError, ValueError):
             precio_unitario_decimal = Decimal('0')
-
-        descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
-        precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
+        if instance.descuento_tipo == 'porcentaje':
+            descuento_decimal = Decimal(instance.descuento) / Decimal('100') if instance.descuento is not None else Decimal('0')
+            precio_unitario_descuento = precio_unitario_decimal * (1 - descuento_decimal)
+        else:
+            descuento_decimal = Decimal(instance.descuento_manual)
+            precio_unitario_descuento = precio_unitario_decimal - descuento_decimal
         instance.precio_total = instance.cantidad * precio_unitario_descuento
 
 

@@ -87,7 +87,7 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    TASAS DE CAMBIO</div>
+                                    TASAS DE CAMBIO : {{fecha}}</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">1 USD = {{pen_rate}} PEN</div>
                             </div>
                             <div class="col-auto">
@@ -105,7 +105,7 @@
                     <span class="icon text-white-50">
                         <i class="fas fa-print"></i>
                     </span>
-                    <span class="text">Descargar PDF</span>
+                    <span class="text">Visualizar PDF</span>
                 </a>
             </div>
 
@@ -146,14 +146,14 @@
                                         <td>{{ detalleObra.cantidad}}</td>
                                         <td>{{detalleObra.codigo}}</td>
                                         <td>{{detalleObra.descripcion}}</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                             <td>S/.{{detalleObra.precio_unitario}}</td>
                                         {% else %}
                                         <td>$.{{detalleObra.precio_unitario}}</td>
                                         {% endif %}
                                         <td>{{detalleObra.disponibilidad}}</td>
                                         <td>{{detalleObra.descuento}}%</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                             <td>S/.{{ detalleObra.precio_total }}</td>
                                         {% else %}
                                         <td>$.{{ detalleObra.precio_total }}</td>
@@ -167,12 +167,12 @@
                                                 class="btn btn-warning btn-circle">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <!-- Icono para eliminar -->
                                             <a href="{% url 'eliminar_detalle_obra' detalleObra.id %}"
                                                 class="btn btn-danger btn-circle eliminar-detalle-obra">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
+                                            
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -311,5 +311,35 @@
         });
     });
 </script>
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var descuentoTipoField = $('[name="descuento_tipo"]');
+        var descuentoField = $('[name="descuento"]').closest('.form-group');
+        var descuentoManualField = $('[name="descuento_manual"]').closest('.form-group');
 
+        function toggleDescuentoFields() {
+            if (descuentoTipoField.filter(':checked').val() === 'manual') {
+                descuentoField.hide();
+                descuentoManualField.show();
+            } else {
+                descuentoField.show();
+                descuentoManualField.hide();
+            }
+        }
+
+        toggleDescuentoFields();  // Inicialmente ocultar o mostrar según el valor actual
+        descuentoTipoField.change(toggleDescuentoFields);
+
+        // Resto de tu código JavaScript
+    });
+</script>
 {% endblock %}

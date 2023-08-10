@@ -171,12 +171,14 @@ class descripcionWidget(s2forms.ModelSelect2Widget):
     
 class DescripcionCotizacionForm(forms.ModelForm):
     class Meta:
+       
         model = descripcionCotizacion
         fields = '__all__'
         widgets = {
             'cotizacion': forms.HiddenInput(),
             'codigo': descripcionWidget,
             'descripcion' :forms.HiddenInput(),
+            'descuento_tipo': forms.RadioSelect(choices=descripcionCotizacion.DESCUENTO_TIPO_CHOICES,),
             'precio_unitario': forms.HiddenInput(),
             'precio_total': forms.HiddenInput(),
             'descuento': forms.Select(attrs={'required': 'required'}),
@@ -197,6 +199,7 @@ class DescripcionCotizacionConsultoriaForm(forms.ModelForm):
             'cotizacion': forms.HiddenInput(),
             'codigo': descripcionWidgetConsultoria,
             'descripcion' :forms.HiddenInput(),
+            'descuento_tipo': forms.RadioSelect(choices=descripcionCotizacion.DESCUENTO_TIPO_CHOICES,),
             'precio_unitario': forms.HiddenInput(),
             'precio_total': forms.HiddenInput(),
             'descuento': forms.Select(attrs={'required': 'required'}),
@@ -216,6 +219,7 @@ class DescripcionCotizacionManoDeObraForm(forms.ModelForm):
             'cotizacion': forms.HiddenInput(),
             'codigo': descripcionWidgetManoDeObra,
             'descripcion' :forms.HiddenInput(),
+            'descuento_tipo': forms.RadioSelect(choices=descripcionCotizacion.DESCUENTO_TIPO_CHOICES,),
             'precio_unitario': forms.HiddenInput(),
             'precio_total': forms.HiddenInput(),
             'descuento': forms.Select(attrs={'required': 'required'}),

@@ -61,7 +61,7 @@
                                 <img src="{{ mantenimiento.imagen_tienda.url }}" alt="Imagen" class="imagen-tienda">
                                 {% endif %} 
                             </td>
-                            {% if mantenimiento.tipo_moneda.tipo == 'soles' %}
+                            {% if mantenimiento.tipo_moneda.tipo == 'Soles' %}
                                 <td>S/.{{mantenimiento.precio_unitario}}</td>
                             {% else %}
                             <td>$.{{mantenimiento.precio_unitario}}</td>
@@ -138,6 +138,15 @@
                         alert('Error al eliminar el producto'); // Mostrar un mensaje de error
                     }
                 });
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
             }
         });
     });

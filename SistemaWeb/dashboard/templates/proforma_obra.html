@@ -20,9 +20,10 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Proforma</th>
                             <th>Fecha</th>
-                            <th>BU</th>
+                            
                             <th>Condición Pago</th>
                             <th>Moneda</th>
                             <th>Validez de O/P</th>
@@ -39,9 +40,10 @@
                     <tbody>
                         {% for proforma in proformasObra %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ proforma }}</td>
-                            <td>{{ proforma.fecha }}</td>
-                            <td>{{ proforma.bu }}</td>
+                            <td>{{ proforma.fecha|date:"j/m/Y" }}</td>
+                            
                             <td>{{ proforma.condicion_pago }}</td>
                             <td>{{ proforma.moneda }}</td>
                             <td>{{ proforma.validez }}</td>
@@ -61,12 +63,16 @@
                                 <a href="{% url 'duplicar_proforma_obra' proforma.id %}" class="btn btn-success btn-circle">
                                     <i class="fas fa-clone"></i>
                                 </a>
-
+                                <a href="{% url 'agregar_cotizacion_obra'  %}" class="btn btn-primary">
+                                    <i class="fas fa-arrow-right"></i> Agregar Cotización
+                                </a>
+                                {% comment %}
                                 <!-- Icono para eliminar -->
                                 <a href="{% url 'eliminar_proforma_obra' proforma.id %}"
                                     class="btn btn-danger btn-circle eliminar-proforma-obra">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
+                                {% endcomment %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -110,5 +116,13 @@
         });
     });
 </script>
-
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
 {% endblock %}

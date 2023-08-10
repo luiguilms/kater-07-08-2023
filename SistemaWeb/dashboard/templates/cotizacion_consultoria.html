@@ -20,9 +20,11 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <td>#</td>
                             <th>Proforma</th>
                             <th>Fecha de proforma</th>
                             <th>Cliente</th>
+                            <th>Actividad</th>
                             <th>Observacion</th>
                             <th>Acciones</th>
                         </tr>
@@ -32,22 +34,28 @@
                     <tbody>
                         {% for cotizacion in cotizacionesConsultoria %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ cotizacion.proforma }}</td>
-                            <td>{{ cotizacion.proforma.fecha }}</td>
+                            <td>{{ cotizacion.proforma.fecha|date:"j/m/Y" }}</td>
                             <td>{{ cotizacion.cliente }}</td>
+                            <td>{{ cotizacion.proforma.actividad}}</td>
                             <td>{{ cotizacion.observacion }}</td>
                             <td>
                                 <!-- Icono para editar -->
                                 <a href="{% url 'editar_cotizacion_consultoria' cotizacion.id %}" class="btn btn-warning btn-circle">
                                     <i class="fas fa-edit"></i>
                                 </a>
-
-
+                                <!-- Icono para duplicar -->
+                                <a href="{% url 'duplicar_cotizacion_consultoria' pk=cotizacion.pk %}" class="btn btn-success btn-circle">
+                                    <i class="fas fa-clone"></i>
+                                </a>
+                                {% comment %}
                                 <!-- Icono para eliminar -->
                                 <a href="{% url 'eliminar_cotizacion_consultoria' cotizacion.id %}"
                                     class="btn btn-danger btn-circle eliminar-cotizacion-consultoria">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
+                                {% endcomment %}
                                 <a href="{% url 'detalle_cotizacion_consultoria' cotizacion.id %}" class="btn btn-info btn-circle">
                                     <i class="fas fa-plus"></i>
                                 </a>
@@ -97,5 +105,13 @@
         });
     });
 </script>
-
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
 {% endblock %}

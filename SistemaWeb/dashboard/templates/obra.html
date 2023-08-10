@@ -47,7 +47,7 @@
                             <td>{{manodeobra.codigo}}</td>
                             <td>{{manodeobra.nombre}}</td>
                             <td>{{manodeobra.descripcion}}</td>
-                            {% if manodeobra.tipo_moneda.tipo == 'soles' %}
+                            {% if manodeobra.tipo_moneda.tipo == 'Soles' %}
                                 <td>S/.{{manodeobra.precio_unitario}}</td>
                             {% else %}
                             <td>$.{{manodeobra.precio_unitario}}</td>
@@ -105,6 +105,15 @@
                         alert('Error al eliminar el cliente'); // Mostrar un mensaje de error
                     }
                 });
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
             }
         });
     });

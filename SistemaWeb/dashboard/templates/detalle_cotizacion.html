@@ -87,7 +87,7 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    TASAS DE CAMBIO</div>
+                                    TASAS DE CAMBIO : {{fecha}}</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">1 USD = {{pen_rate}} PEN</div>
                             </div>
                             <div class="col-auto">
@@ -105,7 +105,7 @@
                     <span class="icon text-white-50">
                         <i class="fas fa-print"></i>
                     </span>
-                    <span class="text">Descargar PDF</span>
+                    <span class="text">Visualizar PDF</span>
                 </a>
             </div>
 
@@ -146,14 +146,18 @@
                                         <td>{{ detalle.cantidad}}</td>
                                         <td>{{detalle.codigo}}</td>
                                         <td>{{detalle.descripcion}}</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                         <td>S/.{{detalle.precio_unitario}}</td>
                                         {% else %}
                                         <td>$.{{detalle.precio_unitario}}</td>
                                         {% endif %}
                                         <td>{{detalle.disponibilidad}}</td>
+                                        {% if detalle.descuento_tipo|stringformat:"s" == 'porcentaje' %}
                                         <td>{{detalle.descuento}}%</td>
-                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'soles' %}
+                                        {% else %}
+                                        <td>{{detalle.descuento_manual}}</td>
+                                        {% endif %}
+                                        {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                         <td>S/.{{ detalle.precio_total }}</td>
                                         {% else %}
                                         <td>$.{{ detalle.precio_total }}</td>
@@ -167,11 +171,15 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
+                                            
+
                                             <!-- Icono para eliminar -->
                                             <a href="{% url 'eliminar_detalle' detalle.id %}"
                                                 class="btn btn-danger btn-circle eliminar-detalle">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
+                                            
+                                            
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -195,7 +203,7 @@
                 <!-- Formulario para agregar detalles -->
 
                 <h2>{% if form.instance.pk %}Editar detalle{% else %}Agregar nuevo dato{% endif %}</h2>
-                <form method="post" class="detalle-form">
+                <form id="detalle-form" method="post" class="detalle-form" >
                     {% csrf_token %}
                     {{ form | crispy }}
                     <button type="submit" class="btn btn-primary">Guardar Detalles</button>
@@ -310,5 +318,39 @@
         });
     });
 </script>
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json"
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var descuentoTipoField = $('[name="descuento_tipo"]');
+        var descuentoField = $('[name="descuento"]').closest('.form-group');
+        var descuentoManualField = $('[name="descuento_manual"]').closest('.form-group');
 
+        function toggleDescuentoFields() {
+            if (descuentoTipoField.filter(':checked').val() === 'manual') {
+                descuentoField.hide();
+                descuentoManualField.show();
+            } else {
+                descuentoField.show();
+                descuentoManualField.hide();
+            }
+        }
+
+        toggleDescuentoFields();  // Inicialmente ocultar o mostrar según el valor actual
+        descuentoTipoField.change(toggleDescuentoFields);
+
+        // Resto de tu código JavaScript
+    });
+</script>
+
+
+
+    
 {% endblock %}
