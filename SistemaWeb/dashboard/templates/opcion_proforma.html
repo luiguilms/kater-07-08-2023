@@ -34,7 +34,14 @@
 
     <!-- Template Main CSS File -->
     <link href="{% static 'assets3/css/main.css' %}" rel="stylesheet">
+    <style>
+        .vertical-line {
+    width: 2px; /* Ancho de la línea */
+    height: 100%; /* Altura igual al contenedor */
+    background-color: #ccc; /* Color de la línea */
+}
 
+    </style>
     <!-- =======================================================
   * Template Name: Logis
   * Updated: Jul 27 2023 with Bootstrap v5.3.1
@@ -50,12 +57,14 @@
 
         <!-- ======= Breadcrumbs ======= -->
         <div class="breadcrumbs">
-            <div class="page-header d-flex align-items-center" style="background-image: url('{% static 'assets3/img/page-header.jpg' %}');">
+            <div class="page-header d-flex align-items-center"
+                style="background-image: url('{% static 'assets3/img/page-header.jpg' %}');">
                 <div class="container position-relative">
                     <div class="row d-flex justify-content-center">
                         <div class="col-lg-6 text-center">
-                            <h2>Proformas</h2>
-                            <p>Obtenga una lista completa de todas las proformas almacenadas en distintas categorias, facilita el proceso facil de administracion</p>
+                            <h2>Operaciones</h2>
+                            <p>Aqui encontraras todas la opciones disponibles de cotizacion y proformas en base al
+                                producto</p>
                         </div>
                     </div>
                 </div>
@@ -64,7 +73,7 @@
                 <div class="container">
                     <ol>
                         <li><a href="/">Inicio</a></li>
-                        <li>Proformas</li>
+                        <li>Operaciones</li>
                     </ol>
                 </div>
             </nav>
@@ -76,42 +85,96 @@
             <div class="container" data-aos="fade-up">
 
                 <div class="section-header">
-                    <span>Opciones </span>
-                    <h2>Opciones de Proformas</h2>
+                    <span>mantenimiento </span>
+                    <h2>Opciones de mantenimiento</h2>
 
                 </div>
 
                 <div class="row gy-4">
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
 
                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
                         <div class="card">
                             <div class="card-img">
                                 <img src="{% static 'assets3/img/mantenimiento.jpg' %}" alt="" class="img-fluid">
                             </div>
-                            <h3><a href="{% url 'proforma' %}" class="stretched-link">Proforma- mantenimiento</a></h3>
-                            <p>En esta seccion se encuentra todas las proformas de la seccion "mantenimiento" y distintas funciones</p>
+                            <h3><a href="#" class="open-sweetalert stretched-link" id="show-sweetalert">Proforma-
+                                    mantenimiento</a></h3>
+                            <p>En esta seccion se encuentra todas las proformas de la seccion "mantenimiento" y
+                                distintas funciones</p>
                         </div>
                     </div><!-- End Card Item -->
+                    <div class="col-lg-2 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
+
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card">
+                            <div class="card-img">
+                                <img src="{% static 'assets3/img/cotizamaquina.jpg' %}" alt="" class="img-fluid">
+                            </div>
+                            <h3><a href="#" class="stretched-link"
+                                    id="show-sweetalert2">cotizacion-mantenimiento- OPDM</a></h3>
+                            <p>En esta seccion se encuentra todas las proformas de la seccion "mantenimiento" y
+                                distintas funciones</p>
+                        </div>
+                    </div><!-- End Card Item -->
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
+
+
+                </div>
+
+            </div>
+        </section><!-- End Services Section -->
+        <!-- ======= Services Section ======= -->
+        <section id="service" class="services pt-0">
+            <div class="container" data-aos="fade-up">
+
+                <div class="section-header">
+                    <span>Consultoria </span>
+                    <h2>Opciones de Consultoria</h2>
+
+                </div>
+
+                <div class="row gy-4">
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
 
                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
                         <div class="card">
                             <div class="card-img">
                                 <img src="{% static 'assets3/img/consultoria.jpg' %}" alt="" class="img-fluid">
                             </div>
-                            <h3><a href="{% url 'proformaconsultoria' %}" class="stretched-link">Proforma-consultoria</a></h3>
-                            <p>En esta seccion se encuentra todas las proformas de la seccion "consultoria" y distintas funciones</p>
+                            <h3><a href="{% url 'proformaconsultoria' %}"
+                                    class="stretched-link">Proforma-consultoria</a></h3>
+                            <p>En esta seccion se encuentra todas las proformas de la seccion "consultoria" y distintas
+                                funciones</p>
                         </div>
                     </div><!-- End Card Item -->
-
-                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="col-lg-2 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
                         <div class="card">
                             <div class="card-img">
-                                <img src="{% static 'assets3/img/obra.jpg' %}" alt="" class="img-fluid">
+                                <img src="{% static 'assets3/img/cotizaconsulta.jpg' %}" alt="" class="img-fluid">
                             </div>
-                            <h3><a href="{% url 'proformamanodeobra' %}" class="stretched-link">Proforma-mano de obra</a></h3>
-                            <p>En esta seccion se encuentra todas las proformas de la seccion "mano de obra" y distintas funciones</p>
+                            <h3><a href="{% url 'cotizacionconsultoria' %}"
+                                    class="stretched-link">cotizacion-consultoria- OPCT</a></h3>
+                            <p>En esta seccion se encuentra todas las proformas de la seccion "consultoria" y distintas
+                                funciones</p>
                         </div>
                     </div><!-- End Card Item -->
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
+
+
                 </div>
 
             </div>
@@ -136,6 +199,58 @@
 
     <!-- Template Main JS File -->
     <script src="{% static 'assets3/js/main.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Agrega un evento click al enlace con el id "show-sweetalert"
+        document.getElementById('show-sweetalert').addEventListener('click', function () {
+            Swal.fire({
+                icon: 'info',
+                title: 'A donde deseas ir?',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Repuestos',
+                denyButtonText: `Mano de Obra`,
+            }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    // Redirige a la URL de 'proforma'
+                    window.location.href = '{% url 'proforma' %}';
+                } else if (result.isDenied) {
+                    // Redirige a la URL de 'proformamanodeobra'
+                    window.location.href = '{% url 'proformamanodeobra' %}';
+                } else {
+                    // Si el usuario hace clic en "Cancelar"
+                    // Aquí puedes manejar otro escenario o dejarlo en blanco si no se requiere ninguna acción.
+                }
+            });
+        });
+    </script>
+    <script>
+        // Agrega un evento click al enlace con el id "show-sweetalert"
+        document.getElementById('show-sweetalert2').addEventListener('click', function () {
+            Swal.fire({
+                icon: 'info',
+                title: 'A donde deseas ir?',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Cotizacion-Repuestos',
+                denyButtonText: `Cotizacion-Mano de Obra`,
+            }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    // Redirige a la URL de 'proforma'
+                    window.location.href = '{% url 'cotizacion' %}';
+                } else if (result.isDenied) {
+                    // Redirige a la URL de 'proformamanodeobra'
+                    window.location.href = '{% url 'cotizacionmanodeobra' %}';
+                } else {
+                    // Si el usuario hace clic en "Cancelar"
+                    // Aquí puedes manejar otro escenario o dejarlo en blanco si no se requiere ninguna acción.
+                }
+            });
+        });
+    </script>
 
 </body>
 

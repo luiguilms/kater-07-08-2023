@@ -9,6 +9,7 @@
     <p class="mb-4">Aca se muestran todas las proformas hechas hasta la fecha.</p>
 
     <a href="{% url 'agregar_proforma_obra' %}" class="btn btn-primary mb-3">Agregar nueva Proforma</a>
+    <a href="{% url 'agregar_cotizacion_obra'  %}" class="btn btn-primary mb-3">Agregar Cotización</a>
 
     <!-- DataTales Example -->
     <div class="card shadow mb-4">
@@ -63,9 +64,7 @@
                                 <a href="{% url 'duplicar_proforma_obra' proforma.id %}" class="btn btn-success btn-circle">
                                     <i class="fas fa-clone"></i>
                                 </a>
-                                <a href="{% url 'agregar_cotizacion_obra'  %}" class="btn btn-primary">
-                                    <i class="fas fa-arrow-right"></i> Agregar Cotización
-                                </a>
+                                
                                 {% comment %}
                                 <!-- Icono para eliminar -->
                                 <a href="{% url 'eliminar_proforma_obra' proforma.id %}"

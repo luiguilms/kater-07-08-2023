@@ -34,6 +34,14 @@
 
     <!-- Template Main CSS File -->
     <link href="{% static 'assets3/css/main.css' %}" rel="stylesheet">
+    <style>
+        .vertical-line {
+    width: 2px; /* Ancho de la línea */
+    height: 100%; /* Altura igual al contenedor */
+    background-color: #ccc; /* Color de la línea */
+}
+
+    </style>
 
     <!-- =======================================================
   * Template Name: Logis
@@ -82,8 +90,11 @@
                 </div>
 
                 <div class="row gy-4">
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
 
-                    <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
                         <div class="card">
                             <div class="card-img">
                                 <img src="{% static 'assets3/img/cliente.jpg' %}" alt="" class="img-fluid">
@@ -92,8 +103,11 @@
                             <p>En esta seccion se encuentra todas los datos del cliente registrado</p>
                         </div>
                     </div><!-- End Card Item -->
+                    <div class="col-lg-2 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
 
-                    <div class="col-lg-6 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
                         <div class="card">
                             <div class="card-img">
                                 <img src="{% static 'assets3/img/vendedor.jpg' %}" alt="" class="img-fluid">
@@ -102,6 +116,9 @@
                             <p>En esta seccion se encuentra todas los datos del vendedor  registrado</p>
                         </div>
                     </div><!-- End Card Item -->
+                    <div class="col-lg-1 d-flex align-items-center justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                        <div class="vertical-line"></div>
+                    </div><!-- End Vertical Line -->
 
                     <!-- End Card Item -->
                 </div>

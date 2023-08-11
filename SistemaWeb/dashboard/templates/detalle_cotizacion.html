@@ -162,24 +162,16 @@
                                         {% else %}
                                         <td>$.{{ detalle.precio_total }}</td>
                                         {% endif %}
-
-
                                         <td>
-
                                             <a href="{% url 'editar_detalle' pk=cotizacion.pk detalle_id=detalle.id %}"
                                                 class="btn btn-warning btn-circle">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
-                                            
-
                                             <!-- Icono para eliminar -->
                                             <a href="{% url 'eliminar_detalle' detalle.id %}"
                                                 class="btn btn-danger btn-circle eliminar-detalle">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
-                                            
-                                            
                                         </td>
                                     </tr>
                                     {% endfor %}

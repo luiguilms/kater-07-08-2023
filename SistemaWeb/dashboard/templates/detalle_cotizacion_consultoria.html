@@ -114,7 +114,6 @@
                                         <th>Codigo</th>
                                         <th>Descripcion</th>
                                         <th>p_unitario</th>
-                                        <th>Disponibilidad</th>
                                         <th>Descuento</th>
                                         <th>Total</th>
                                         <th>Acciones</th>
@@ -133,7 +132,6 @@
                                         {% else %}
                                         <td>$.{{detalleConsultoria.precio_unitario}}</td>
                                         {% endif %}
-                                        <td>{{detalleConsultoria.disponibilidad}}</td>
                                         <td>{{detalleConsultoria.descuento}}%</td>
                                         {% if cotizacion.proforma.moneda|stringformat:"s" == 'Soles' %}
                                             <td>S/.{{ detalleConsultoria.precio_total }}</td>
