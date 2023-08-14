@@ -39,6 +39,12 @@
             </tr>
         </tbody>
     </table>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cambiarMonedaModal">
+        Cambiar Moneda
+    </button>
+    
+
+
 
     <h2>{{ cotizacion.proforma }}</h2>
     <table class="table table-bordered">
@@ -209,6 +215,25 @@
 
         </div>
     </div>
+    <!-- Modal para cambiar moneda -->
+<div class="modal fade" id="cambiarMonedaModal" tabindex="-1" role="dialog" aria-labelledby="cambiarMonedaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cambiarMonedaModalLabel">Cambiar Moneda</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para cambiar moneda -->
+                <form method="post" id="cambiar-moneda-form">
+                    <button type="submit" class="btn btn-primary">Cambiar Moneda</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>
 <!-- Agregar este script al final del template -->
@@ -340,6 +365,17 @@
 
         // Resto de tu código JavaScript
     });
+</script>
+<script>
+
+    // Manejar el evento cuando el formulario de cambio de moneda se envíe
+    //$('#cambiar-moneda-form').submit(function (event) {
+    //    event.preventDefault();
+        // Aquí puedes agregar el código para manejar el envío del formulario de cambio de moneda
+        // Por ejemplo, puedes usar AJAX para enviar la solicitud al servidor
+        // Una vez que se haya cambiado la moneda, puedes cerrar el modal
+    //    $('#cambiarMonedaModal').modal('hide');
+    //});
 </script>
 
 

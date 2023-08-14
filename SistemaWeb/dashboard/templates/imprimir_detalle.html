@@ -145,10 +145,10 @@
         <thead>
             <tr>
                 <th align="center" style="width: 10%;">ITEM</th>
-                <th align="center" style="width: 25%;">CANTIDAD</th>
+                <th align="center" style="width: 20%;">CANTIDAD</th>
                 <th align="center" style="width: 25%;">CODIGO</th>
                 <th align="center" style="width: 75%;">NOMBRE </th>
-                <th align="center" style="width: 30%;">P_UNITARIO</th>
+                <th align="center" style="width: 25%;">P_UNITARIO</th>
                 <th align="center" style="width: 40%;">DISPONIBILIDAD</th>
                 <th align="center" style="width: 30%;">DESCUENTO</th>
                 <th align="center" style="width: 20%;">TOTAL</th>
@@ -165,20 +165,27 @@
                 <td>{{detalle.descripcion}}</td>
                 <td class="text-center">{{detalle.precio_unitario}}</td>
                 <td class="text-center">{{detalle.disponibilidad}}</td>
-                <td class="text-center">{{detalle.descuento}}%</td>
+                {% if detalle.descuento_tipo|stringformat:"s" == 'porcentaje' %}
+                    <td class="text-center">{{detalle.descuento}}%</td>
+                {% else %}
+                    <td class="text-center">{{detalle.descuento_manual}}</td>
+                {% endif %}
                 <td style="text-align: right;">{{detalle.precio_total}}</td>
             </tr>
             {% endfor %}
             <tr style="border-top: 1px solid black; padding-top: 4px;">
-                <td colspan="7"><b>SUBTOTAL</b></td>
+                <td colspan="6"></td>
+                <td colspan="1"><b>SUBTOTAL</b></td>
                 <td style="text-align: right">{{ subtotal }}</td>
             </tr>
             <tr style="padding-top: 0px;">
-                <td colspan="7"><b>IGV 18%</b></td>
+                <td colspan="6"></td>
+                <td colspan="1"><b>IGV 18%</b></td>
                 <td style="text-align: right">{{ igv|floatformat:2 }}</td>
             </tr>
             <tr style="padding-top: 0px;">
-                <td colspan="7"><b>TOTAL A PAGAR</b></td>
+                <td colspan="6"></td>
+                <td colspan="1"><b>TOTAL A PAGAR</b></td>
                 <td style="text-align: right">{{ precio_total|floatformat:2 }}</td>
             </tr>
         </tbody>
@@ -222,14 +229,14 @@
     <table id="invoice" style="page-break-before: always;">
         <thead>
             <tr>
-                <th style="width: 40%;">ITEM</th>
-                <th style="width: 40%;">CANTIDAD</th>
-                <th style="width: 40%;">CODIGO</th>
-                <th style="width: 80%;">NOMBRE </th>
-                <th style="width: 40%;">MARCA</th>
-                <th style="width: 40%;">IMAGEN DE TIENDA</th>
-                <th style="width: 40%;">PESO</th>
-                <th style="width: 40%;">OBSERVACION</th>
+                <th align="center" style="width: 15%;">ITEM</th>
+                <th align="center" style="width: 25%;">CANTIDAD</th>
+                <th style="width: 20%;">CODIGO</th>
+                <th align="center" style="width: 80%;">NOMBRE </th>
+                <th align="center" style="width: 25%;">MARCA</th>
+                <th align="center" style="width: 80%;">IMAGEN DE TIENDA</th>
+                <th align="center" style="width: 25%;">PESO</th>
+                <th align="center" style="width: 40%;">OBSERVACION</th>
             </tr>
         </thead>
         <tbody>
@@ -242,8 +249,10 @@
                 <td>{{detalle.codigo}}</td>
                 <td>{{detalle.descripcion}}</td>
                 <td class="text-center">{{detalle.codigo.marca}}</td>
-                <td>                    
+                <td class="text-center">  
+                    {% if detalle.codigo.imagen_tienda %}                  
                     <img src="{{ detalle.codigo.imagen_tienda.url|safe }}" alt="Imagen" class="imagen-tienda">
+                    {% endif %} 
                 </td>
                 <td class="text-center">{{detalle.codigo.peso}}</td>
                 <td style="text-align: right;">{{detalle.codigo.observacion}}</td>

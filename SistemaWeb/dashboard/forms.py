@@ -69,6 +69,15 @@ class ProformaForm(forms.ModelForm):
         if fecha == date.today():
             return date.today()
         return fecha
+    
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+        year = instance.fecha.year % 100
+        month = instance.fecha.month
+        instance.__str__ = lambda: f"Proforma {instance.id}-OPDM{year}.{month}"
+        if commit:
+            instance.save()
+        return instance
 
 class ProformaConsultoriaForm(forms.ModelForm):
     class Meta:
@@ -124,6 +133,15 @@ class ProformaManoDeObraForm(forms.ModelForm):
             return date.today()
         return fecha
 
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+        year = instance.fecha.year % 100
+        month = instance.fecha.month
+        instance.__str__ = lambda: f"Proforma {instance.id}-OPMDO{year}.{month}"
+        if commit:
+            instance.save()
+        return instance
+    
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
@@ -241,3 +259,12 @@ class ManoDeObraForm(forms.ModelForm):
     class Meta:
         model = ManodeObra
         fields = '__all__'
+
+
+class CambiarMonedaForm(forms.Form):
+    nueva_moneda = forms.ModelChoiceField(
+        queryset=Moneda.objects.all(),
+        label="Cambiar moneda",
+        required=False,
+        empty_label="Seleccione una moneda"
+    )

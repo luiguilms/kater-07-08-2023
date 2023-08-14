@@ -451,6 +451,8 @@ class CotizacionEliminarView(View):
 def detalle_cotizacion(request, pk, detalle_id=None):
     cotizacion = get_object_or_404(Cotizacion, pk=pk)
     detalles = descripcionCotizacion.objects.filter(cotizacion=cotizacion)
+    cambiar_moneda_form = CambiarMonedaForm()
+    
 
     # Si se proporciona un detalle_id, es una solicitud de edición
     if detalle_id:
@@ -479,8 +481,16 @@ def detalle_cotizacion(request, pk, detalle_id=None):
         #usd_rate = None
     
     if request.method == 'POST':
-        # Si es una edición, instanciamos el formulario con el detalle existente
-        # Si es una adición, instanciamos el formulario sin datos vinculados
+        '''
+        cambiar_moneda_form = CambiarMonedaForm(request.POST)
+        if cambiar_moneda_form.is_valid():
+            nueva_moneda = cambiar_moneda_form.cleaned_data['nueva_moneda']
+            # Hacer lo que necesites con la nueva moneda, por ejemplo:
+            cotizacion.proforma.moneda = nueva_moneda
+            cotizacion.proforma.save()
+        '''
+
+
         form = DescripcionCotizacionForm(request.POST, instance=detalle)
         if form.is_valid():
             nuevo_detalle = form.save(commit=False)
@@ -503,6 +513,8 @@ def detalle_cotizacion(request, pk, detalle_id=None):
         else:
             # Imprime los errores del formulario en la consola
             print("Formulario inválido:", form.errors)
+                # Manejar el cambio de moneda
+        
     else:
         # Si no hay detalle existente, muestra el formulario vacío
         form = DescripcionCotizacionForm(
@@ -513,7 +525,9 @@ def detalle_cotizacion(request, pk, detalle_id=None):
         'detalles': detalles,
         'form': form,
         'pen_rate': pen_rate,
-        'fecha':fecha_rate
+        'fecha':fecha_rate,
+        'cambiar_moneda_form': cambiar_moneda_form,  # Agregar el formulario al contexto
+
     }
     return render(request, 'detalle_cotizacion.html', context)
 # ------------FIN COTIZACION-------------------

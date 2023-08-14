@@ -54,6 +54,12 @@ class Bu(models.Model):
     bu=models.CharField(max_length=200)
     def __str__(self):
         return self.bu
+    
+def generar_nombre_proforma(instance):
+    year = instance.fecha.year % 100
+    month = instance.fecha.month
+    return f"Proforma {instance.id}-OPDM{year}.{month}"
+
 class Proforma(models.Model):
     fecha = models.DateField(auto_now=True)
     bu = models.ForeignKey(Bu, on_delete=models.CASCADE)
@@ -100,7 +106,7 @@ class ProformaManoDeObra(models.Model):
     def __str__(self):
         year = self.fecha.year % 100
         month = self.fecha.month
-        return f"Proforma {self.id}-OPMDO{year}.{month}" 
+        return f"Proforma {self.id}-OPDMO{year}.{month}" 
 
 
 
